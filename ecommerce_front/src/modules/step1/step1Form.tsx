@@ -13,13 +13,17 @@ import SubmitButton from "@/components/button";
 import { useState, useEffect } from "react";
 
 const flightClasses = [
-  { value: "economy", label: "Económica" },
-  { value: "business", label: "Ejecutiva" },
-  { value: "first", label: "Primera Clase" },
+  { value: "Economy", label: "Económica" },
+  { value: "Business", label: "Ejecutiva" },
+  { value: "First Class", label: "Primera Clase" },
 ];
 
-export default function Step1Form() {
-  const [step, setStep] = useState(0);
+type Step1FormProps = {
+  onSubmit: (data: Step1FormValues) => void;
+};
+
+export default function Step1Form({ onSubmit }: Step1FormProps) {
+  const [step] = useState(0);
   const [allDestinations, setAllDestinations] = useState<string[]>([]);
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -32,16 +36,36 @@ export default function Step1Form() {
       .then((res) => res.json())
       .then((data) => {
         const destinationsSet = new Set<string>();
-
         data.forEach((item: any) => {
-          const label = `${item.destination}`;
-          destinationsSet.add(label);
+          destinationsSet.add(item.destination);
         });
-
-        const uniqueDestinations = Array.from(destinationsSet);
-        setAllDestinations(uniqueDestinations);
+        setAllDestinations(Array.from(destinationsSet));
       });
   }, []);
+
+  const methods = useForm({
+    resolver: zodResolver(step1Schema),
+    defaultValues: {
+      destination: "",
+      departureDate: null,
+      returnDate: null,
+      flightClass: "",
+    },
+  });
+
+  const {
+    setValue,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting },
+  } = methods;
+
+  const rawDeparture = watch("departureDate");
+  const departureDate: Date | null =
+    rawDeparture instanceof Date ? rawDeparture : null;
+
+  const rawReturn = watch("returnDate");
+  const returnDate: Date | null = rawReturn instanceof Date ? rawReturn : null;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -65,33 +89,16 @@ export default function Step1Form() {
     setShowSuggestions(false);
   };
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { errors, isSubmitting },
-  } = useForm<Step1FormValues>({
-    resolver: zodResolver(step1Schema),
-    defaultValues: {
-      destination: "",
-      departureDate: undefined,
-      returnDate: undefined,
-      flightClass: "",
-    },
-  });
+  const maxDate = new Date();
+  maxDate.setMonth(maxDate.getMonth() + 6); // 6 meses desde hoy
 
-  const departureDate = watch("departureDate");
-  const returnDate = watch("returnDate");
-
-  const onSubmit = (data: Step1FormValues) => {
-    console.log("Paso 1 válido ✅:", data);
-    // Aquí puedes hacer: setStep(1);
+  const handleSubmitForm = (data: any) => {
+    onSubmit(data as Step1FormValues);
   };
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(handleSubmitForm)}
       className="w-full mx-auto p-8 bg-white shadow rounded-lg space-y-6"
     >
       <StepIndicator
@@ -104,35 +111,46 @@ export default function Step1Form() {
         ]}
       />
 
-      <InputField
-        label="Destino"
-        name="destination"
-        value={inputValue}
-        onChange={handleInputChange}
-        error={errors.destination?.message}
-      />
+      <div className="relative">
+        <InputField
+          label="Destino"
+          name="destination"
+          value={inputValue}
+          onChange={handleInputChange}
+          error={errors.destination?.message}
+        />
+        {showSuggestions && filteredSuggestions.length > 0 && (
+          <ul className="absolute bg-white border border-gray-300 w-full mt-1 rounded shadow z-10">
+            {filteredSuggestions.map((s, i) => (
+              <li
+                key={i}
+                onClick={() => handleSuggestionClick(s)}
+                className="px-4 py-2 cursor-pointer hover:bg-gray-100 text-sm"
+              >
+                {s}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
       <DateField
         label="Fecha de salida"
         name="departureDate"
-        selected={departureDate}
-        onChange={(date: Date | null) => {
-          if (date) {
-            setValue("departureDate", date);
-          }
-        }}
+        selected={departureDate ?? null}
+        onChange={(date) => setValue("departureDate", date ?? undefined)}
+        minDate={new Date()}
+        maxDate={maxDate}
         error={errors.departureDate?.message}
       />
 
       <DateField
         label="Fecha de regreso"
         name="returnDate"
-        selected={returnDate}
-        onChange={(date: Date | null) => {
-          if (date) {
-            setValue("returnDate", date);
-          }
-        }}
+        selected={returnDate ?? null}
+        onChange={(date) => setValue("returnDate", date ?? undefined)}
+        minDate={departureDate ?? new Date()}
+        maxDate={maxDate}
         error={errors.returnDate?.message}
       />
 

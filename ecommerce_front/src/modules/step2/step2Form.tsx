@@ -12,7 +12,11 @@ import { InputNumberField } from "@/components/form-inputStepper";
 import { PassengerFields } from "@/components/PassengerFields";
 import SubmitButton from "@/components/button";
 
-export default function Step2Form() {
+type Step2FormProps = {
+  onSubmit: (data: Step2FormValues) => void;
+};
+
+export default function Step2Form({ onSubmit }: Step2FormProps) {
   const methods = useForm<Step2FormValues>({
     resolver: zodResolver(step2Schema),
     defaultValues: {
@@ -66,15 +70,14 @@ export default function Step2Form() {
     }
   }, [travelersCount]);
 
-  const onSubmit = (data: Step2FormValues) => {
-    console.log("✅ Datos del paso 2:", data);
-    // setStep(2); // si estuvieras en flujo multistep
+  const handleSubmitForm = (data: Step2FormValues) => {
+    onSubmit(data); // ← lo pasas al padre
   };
 
   return (
     <FormProvider {...methods}>
       <form
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(handleSubmitForm)}
         className="w-full mx-auto p-8 bg-white shadow rounded-lg space-y-6"
       >
         <StepIndicator
