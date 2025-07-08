@@ -7,7 +7,6 @@ import Step3Form from "@/modules/step3/step3Form";
 import Step4Form from "@/modules/step4/step4Form";
 
 import { AllFormData } from "@/types/form.types";
-import Swal from "sweetalert2";
 
 export default function ReservationForm() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -23,8 +22,6 @@ export default function ReservationForm() {
     setFormData({} as AllFormData);
     setCurrentStep(0);
   };
-
-  const goToStep = (step: number) => setCurrentStep(step);
 
   return (
     <div className="w-full mx-auto p-8 bg-white shadow rounded-lg space-y-6">

@@ -4,10 +4,8 @@ import { useEffect } from "react";
 import { useForm, useFieldArray, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Step2FormValues, step2Schema } from "@/schemas/step2.schema";
-import { z } from "zod";
 
 import { StepIndicator } from "@/components/stepIndicator";
-import { InputField } from "@/components/form-inputfield";
 import { InputNumberField } from "@/components/form-inputStepper";
 import { PassengerFields } from "@/components/PassengerFields";
 import SubmitButton from "@/components/button";
@@ -68,7 +66,7 @@ export default function Step2Form({ onSubmit }: Step2FormProps) {
         remove(i - 1);
       }
     }
-  }, [travelersCount]);
+  }, [travelersCount, fields.length, append, remove]);
 
   const handleSubmitForm = (data: Step2FormValues) => {
     onSubmit(data); // ← lo pasas al padre
