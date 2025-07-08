@@ -21,6 +21,9 @@ const flightClasses = [
 export default function Step1Form() {
   const [step, setStep] = useState(0);
   const [allDestinations, setAllDestinations] = useState<string[]>([]);
+  const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
     fetch(
@@ -39,6 +42,28 @@ export default function Step1Form() {
         setAllDestinations(uniqueDestinations);
       });
   }, []);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputValue(value);
+    setValue("destination", value);
+    if (value.length > 0) {
+      const filtered = allDestinations.filter((d) =>
+        d.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredSuggestions(filtered.slice(0, 5));
+      setShowSuggestions(true);
+    } else {
+      setFilteredSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setInputValue(suggestion);
+    setValue("destination", suggestion);
+    setShowSuggestions(false);
+  };
 
   const {
     register,
@@ -82,8 +107,8 @@ export default function Step1Form() {
       <InputField
         label="Destino"
         name="destination"
-        value={watch("destination")}
-        onChange={(e) => setValue("destination", e.target.value)}
+        value={inputValue}
+        onChange={handleInputChange}
         error={errors.destination?.message}
       />
 
