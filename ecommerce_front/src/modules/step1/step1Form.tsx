@@ -22,6 +22,12 @@ type Step1FormProps = {
   onSubmit: (data: Step1FormValues) => void;
 };
 
+type FlightData = {
+  destination: string;
+  class: string;
+  priceUSD: number;
+};
+
 export default function Step1Form({ onSubmit }: Step1FormProps) {
   const [step] = useState(0);
   const [allDestinations, setAllDestinations] = useState<string[]>([]);
@@ -36,7 +42,7 @@ export default function Step1Form({ onSubmit }: Step1FormProps) {
       .then((res) => res.json())
       .then((data) => {
         const destinationsSet = new Set<string>();
-        data.forEach((item: any) => {
+        data.forEach((item: FlightData) => {
           destinationsSet.add(item.destination);
         });
         setAllDestinations(Array.from(destinationsSet));
@@ -92,8 +98,8 @@ export default function Step1Form({ onSubmit }: Step1FormProps) {
   const maxDate = new Date();
   maxDate.setMonth(maxDate.getMonth() + 6); // 6 meses desde hoy
 
-  const handleSubmitForm = (data: any) => {
-    onSubmit(data as Step1FormValues);
+  const handleSubmitForm = (data: Step1FormValues) => {
+    onSubmit(data);
   };
 
   return (
