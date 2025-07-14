@@ -37,3 +37,5 @@ export const step2Schema = z.object({
 });
 
 export type Step2FormValues = z.infer<typeof step2Schema>;
+// ✅ Export individual del tipo de cada viajero
+export type Traveler = Step2FormValues["travelers"][number];
