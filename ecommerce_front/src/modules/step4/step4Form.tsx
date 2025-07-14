@@ -4,6 +4,7 @@ import { AllFormData } from "@/types/form.types";
 import SubmitButton from "@/components/button";
 import { StepIndicator } from "@/components/stepIndicator";
 import Swal from "sweetalert2";
+import type { Traveler } from "@/schemas/step2.schema";
 
 type Step4SummaryProps = {
   data: AllFormData;
@@ -57,9 +58,12 @@ export default function Step4Summary({
         <strong>Viajeros:</strong> {data.travelersCount}
       </p>
       <ul className="list-disc ml-6">
-        {data.travelers.map((t: any, i: number) => (
+        {data.travelers.map((t: Traveler, i: number) => (
           <li key={i}>
-            {t.fullName} - {t.birthDate.toLocaleDateString()}
+            {t.fullName}
+            {t.birthDate
+              ? ` - ${t.birthDate.toLocaleDateString()}`
+              : " - (Sin fecha de nacimiento)"}
           </li>
         ))}
       </ul>

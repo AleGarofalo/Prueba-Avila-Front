@@ -3,7 +3,8 @@
 import { InputField } from "@/components/form-inputfield";
 import { DateField } from "@/components/form-datefield";
 import { SelectField } from "@/components/form-selectfield";
-import { useFormContext } from "react-hook-form";
+import { useFormContext, type FieldErrors } from "react-hook-form";
+import type { Step2FormValues } from "@/schemas/step2.schema";
 
 type PassengerFieldsProps = {
   index: number;
@@ -20,16 +21,19 @@ export function PassengerFields({ index }: PassengerFieldsProps) {
     watch,
     setValue,
     formState: { errors },
-  } = useFormContext();
+  } = useFormContext<Step2FormValues>();
 
-  const prefix = `travelers.${index}`;
-  const docPath = `${prefix}.document`;
+  const prefix = `travelers.${index}` as const;
+  const docPath = `${prefix}.document` as const;
 
   const birthDate = watch(`${prefix}.birthDate`);
   const docType = watch(`${docPath}.type`);
   const docNumber = watch(`${docPath}.number`);
+  const fullName = watch(`${prefix}.fullName`);
 
-  const travelerErrors = (errors?.travelers as any)?.[index] ?? {};
+  // 🔧 Tipado de errores corregido
+  const typedErrors = errors as FieldErrors<Step2FormValues>;
+  const travelerErrors = typedErrors?.travelers?.[index];
 
   return (
     <div className="p-4 border rounded-md bg-white space-y-4">
@@ -38,7 +42,7 @@ export function PassengerFields({ index }: PassengerFieldsProps) {
       <InputField
         name={`${prefix}.fullName`}
         label="Nombre completo"
-        value={watch(`${prefix}.fullName`) || ""}
+        value={fullName || ""}
         onChange={(e) => setValue(`${prefix}.fullName`, e.target.value)}
         error={travelerErrors?.fullName?.message}
       />
@@ -46,9 +50,9 @@ export function PassengerFields({ index }: PassengerFieldsProps) {
       <DateField
         name={`${prefix}.birthDate`}
         label="Fecha de nacimiento"
-        selected={birthDate}
+        selected={birthDate || null}
         onChange={(date) => {
-          if (date) setValue(`${prefix}.birthDate`, date);
+          setValue(`${prefix}.birthDate`, date ?? undefined);
         }}
         error={travelerErrors?.birthDate?.message}
       />
@@ -62,12 +66,15 @@ export function PassengerFields({ index }: PassengerFieldsProps) {
           <SelectField
             label="Tipo de documento"
             name={`${docPath}.type`}
-            value={docType}
-            onChange={(e) => setValue(`${docPath}.type`, e.target.value)}
+            value={docType as "V" | "J" | "E"}
+            onChange={(e) =>
+              setValue(`${docPath}.type`, e.target.value as "V" | "J" | "E")
+            }
             options={docTypes}
-            error={travelerErrors?.document?.type?.message}
+            error={
+              (travelerErrors?.document?.type as { message?: string })?.message
+            }
           />
-
           <InputField
             label="Número de documento"
             name={`${docPath}.number`}
